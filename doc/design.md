@@ -11,9 +11,9 @@ Each operating system reports file changes in its own way:
 | counts | operations collapse; a flag can say created and modified | a save can be `MODIFY` twice plus `CLOSE_WRITE` | modify often fires twice; the buffer can overflow and drop events |
 | rename | one flag, no pairing | a cookie pairs from and to | old and new records |
 
-A library that passes these through, as fsnotify and therefore
-`pod-babashka-fswatcher` do, cannot promise the same events everywhere.
-Its own documentation says so.
+A library that passes these events through, as fsnotify and therefore
+`pod-babashka-fswatcher` do, cannot promise the same events on every
+platform. Its documentation says so.
 
 ## The answer, from chokidar
 
@@ -21,7 +21,7 @@ chokidar does not trust the events. It keeps a tree of the watched
 directories with a stat per entry. An event from the operating system is a
 hint: look here. The library stats or lists the path and compares it with
 the tree. The difference is the event: `add`, `change`, `unlink`, `addDir`,
-`unlinkDir`. The same difference produces the same event on every backend.
+or `unlinkDir`. The same difference produces the same event on every backend.
 
 This library does the same:
 
@@ -51,8 +51,9 @@ decide what an event means. The core is plain Clojure over `babashka.fs`.
   first, so this order holds even when the backend reports the file and
   the directory in separate batches.
 - A backend that lost events (FSEvents `MustScanSubDirs`, inotify
-  `IN_Q_OVERFLOW`, a zero-length `ReadDirectoryChangesW` result) asks for
-  a full comparison of the subtree. Nothing is lost, only delayed.
+  `IN_Q_OVERFLOW`, or a zero-length `ReadDirectoryChangesW` result) asks for
+  a full comparison of the subtree. The comparison reports the current
+  difference. It does not report every operation that occurred before it.
 - At least once. A comparison can find a file already changed twice and
   report one `:change`. No backend can promise the exact count of the
   operations, and the library does not pretend to.
@@ -78,10 +79,10 @@ on a thread per root. Names are UTF-16 and relative to the root. A file
 root watches its parent directory; the core ignores hints for the
 siblings.
 
-Polling: a timer that hints every root with "and everything below" at
-`:interval`. It uses nothing but the core, which makes it the reference:
-the other backends must produce what it produces. The suite runs twice,
-once on the native backend and once on polling, to prove that.
+Polling: a timer that hints every root, with "and everything below", at
+`:interval`. It uses only the core, so it provides the reference behavior.
+The other backends must produce the same event types for the same changes.
+The suite runs on both a native backend and polling.
 
 ## Options, and where they come from
 

@@ -127,8 +127,8 @@ here; use `:depth 0` for the old default. `:delay-ms` keeps its meaning.
 
 ## Design
 
-[doc/design.md](doc/design.md) explains why the events come from a tree and
-what each backend does.
+[ADR 0001](doc/adr/ai/0001-events-from-a-tree.md) explains why the events
+come from a tree and what each backend does.
 
 ## Tests
 

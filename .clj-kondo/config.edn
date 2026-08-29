@@ -1,0 +1,1 @@
+{:hooks {:macroexpand {babashka.filewatcher-test/with-watch babashka.filewatcher-test/with-watch}}}

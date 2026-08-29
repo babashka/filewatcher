@@ -98,12 +98,10 @@ The suite is the contract: one set of file operations, one expected stream
 of events, run on every backend.
 
 ```
-bb test            # the backend of this operating system
+bb test:bb         # the backend of this operating system
 bb test:polling    # the polling backend, the reference
+bb test:jvm        # the same suite on the JVM, with babashka.ffi from git
 ```
-
-On the JVM, `clojure -M:test` runs the same suite with
-[babashka.ffi](https://github.com/babashka/ffi) from git.
 
 ## License
 

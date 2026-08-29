@@ -62,7 +62,8 @@
       (zero? n) false
       :else
       (loop [off 0]
-        (when (< off n)
+        (if-not (< off n)
+          true
           (let [wd (ffi/read buf :int off)
                 m (ffi/read buf :uint32 (+ off 4))
                 len (ffi/read buf :uint32 (+ off 12))
@@ -80,8 +81,7 @@
               :else
               (when-let [dir (get-in @wds [:by-wd wd])]
                 (core/hint! w (if name (core/join dir name) dir) false)))
-            (recur (+ off 16 len))))
-        true))))
+            (recur (+ off 16 len))))))))
 
 (defn make-backend [w _opts]
   (let [arena (ffi/shared-arena)

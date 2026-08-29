@@ -1,0 +1,46 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-2022]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install babashka dev build
+        run: |
+          bash <(curl -s https://raw.githubusercontent.com/babashka/babashka/master/install) --dev-build --dir . --dynamic
+
+      # FSEvents, inotify and ReadDirectoryChangesW ship with the operating
+      # system: nothing to install
+
+      - name: Test the native backend
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then bb=./bb.exe; else bb=./bb; fi
+          "$bb" test:bb
+
+      - name: Test the polling backend
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then bb=./bb.exe; else bb=./bb; fi
+          "$bb" test:polling
+
+  jvm:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+      - uses: DeLaGuardo/setup-clojure@13.4
+        with:
+          cli: latest
+      - run: clojure -M:test

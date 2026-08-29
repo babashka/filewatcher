@@ -8,7 +8,44 @@ Linux, `ReadDirectoryChangesW` on Windows, and polling everywhere.
 
 ## Status
 
-Experimental. Needs a babashka with `babashka.ffi`.
+Experimental. Needs a babashka with `babashka.ffi`: a dev build from
+2026-08-29 or later, or version 1.13.220 when released.
+
+## Install
+
+The library is a git dependency. In `bb.edn` or `deps.edn`:
+
+```clojure
+{:deps {io.github.babashka/filewatcher
+        {:git/url "https://github.com/babashka/filewatcher"
+         :git/sha "<a commit sha>"}}}
+```
+
+### On the JVM
+
+The same dependency works on the JVM. `babashka.ffi` comes along as a git
+dependency and uses the Java FFM API, so:
+
+- JDK 22 or newer.
+- Start the JVM with `--enable-native-access=ALL-UNNAMED`, or set the
+  `Enable-Native-Access` manifest attribute in an uberjar. Without the flag,
+  modern JDKs warn, and a future JDK release refuses the calls.
+
+For example, in `deps.edn`:
+
+```clojure
+{:deps {io.github.babashka/filewatcher
+        {:git/url "https://github.com/babashka/filewatcher"
+         :git/sha "<a commit sha>"}}
+ :aliases {:run {:jvm-opts ["--enable-native-access=ALL-UNNAMED"]}}}
+```
+
+```
+clojure -M:run -e "(require '[babashka.filewatcher :as fw]) (fw/watch \".\" prn) @(promise)"
+```
+
+Nothing else is needed on any platform: FSEvents, inotify, and
+`ReadDirectoryChangesW` are part of the operating system.
 
 ## Usage
 

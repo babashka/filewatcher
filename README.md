@@ -125,11 +125,6 @@ events differ by platform. This library reports the same event types
 everywhere. The names follow chokidar. Recursive watching is the default
 here; use `:depth 0` for the old default. `:delay-ms` keeps its meaning.
 
-## Design
-
-[ADR 0001](doc/adr/ai/0001-events-from-a-tree.md) explains why the events
-come from a tree and what each backend does.
-
 ## Tests
 
 The suite is the contract: one set of file operations, one expected stream

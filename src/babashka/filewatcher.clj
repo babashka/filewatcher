@@ -51,7 +51,7 @@
 (defn watch
   "Watches paths and calls f with an event map for every change. paths is
   one path or a collection of paths, each a file or a directory. Returns a
-  watcher for unwatch.
+  watcher for unwatch. Each path is a file or a directory.
 
   Events are maps with :type and :path. The path is the watched path as
   given, extended with the part below it. The types:

@@ -83,14 +83,17 @@
     instead of listening to the operating system. Use for network and
     container file systems.
   - :delay-ms: how long to collect changes to a path before reporting them.
-    Default 50."
+    Default 50.
+  - :persistent: true keeps the process alive until unwatch. Default true.
+    With false the process can end while the watcher runs."
   ([paths f] (watch paths f nil))
   ([paths f opts]
    (let [paths (if (or (string? paths) (not (coll? paths))) [paths] (vec paths))
          _ (when (empty? paths)
              (throw (ex-info "filewatcher: watch needs at least one path" {})))
          opts (merge {:ignore-initial false :follow-symlinks false
-                      :atomic (not (:use-polling opts)) :interval 100 :delay-ms 50}
+                      :atomic (not (:use-polling opts)) :interval 100 :delay-ms 50
+                      :persistent true}
                      opts)
          awf (let [a (:await-write-finish opts)]
                (cond (map? a) (merge default-awf a)
@@ -105,6 +108,7 @@
             :await-write-finish awf
             :atomic (:atomic opts)
             :delay-ms (:delay-ms opts)
+            :persistent (:persistent opts)
             :queue (java.util.concurrent.LinkedBlockingQueue.)
             :tree (atom {})
             :file-roots (atom {})

@@ -380,7 +380,9 @@
                          (catch Throwable t
                            (deliver! w {:type :error :error t}))))
                      "filewatcher-dispatch")]
-      (.setDaemon t true)
+      ;; a persistent watcher keeps the process alive until unwatch: a
+      ;; non-daemon thread does that on both hosts
+      (.setDaemon t (not (:persistent w)))
       (.start t)
       (reset! (:thread w) t))
     w))

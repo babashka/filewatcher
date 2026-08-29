@@ -41,7 +41,7 @@ For example, in `deps.edn`:
 ```
 
 ```
-clojure -M:run -e "(require '[babashka.filewatcher :as fw]) (fw/watch \".\" prn) @(promise)"
+clojure -M:run -e "(require '[babashka.filewatcher :as fw]) (fw/watch \".\" prn)"
 ```
 
 Nothing else is needed on any platform: FSEvents, inotify, and
@@ -66,7 +66,9 @@ Nothing else is needed on any platform: FSEvents, inotify, and
 
 `watch` takes one path or a collection of paths, each a file or a directory,
 and returns a watcher for `unwatch`. The function receives one event map at
-a time, in order, on the watcher's thread.
+a time, in order, on the watcher's thread. The watcher keeps the process
+alive until `unwatch`, on babashka and on the JVM, so a script that only
+watches needs no other way to block.
 
 ### Events
 
@@ -114,16 +116,10 @@ its contents reports `:unlink` for each file, deepest first, then
 | `:use-polling` | compare the tree every `:interval` ms instead of listening to the operating system; for network and container file systems | `false` |
 | `:interval` | the polling interval in ms | `100` |
 | `:delay-ms` | how long to collect changes to a path before reporting them | `50` |
+| `:persistent` | keep the process alive until `unwatch` | `true` |
 
 `watched` returns what the watcher knows. It maps each watched directory to
 the names in that directory.
-
-### From the fswatcher pod
-
-`pod-babashka-fswatcher` reported the operating system's own events. These
-events differ by platform. This library reports the same event types
-everywhere. The names follow chokidar. Recursive watching is the default
-here; use `:depth 0` for the old default. `:delay-ms` keeps its meaning.
 
 ## Tests
 

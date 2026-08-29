@@ -213,8 +213,11 @@
         events (atom [])
         w (fw/watch dir #(swap! events conj %) {:use-polling polling?})]
     (is (wait-for events ready?))
-    (fw/unwatch w)
-    (fw/unwatch w)
+    (let [^Thread t @(:thread (::fw/impl (meta w)))]
+      (is (not (.isDaemon t)) "a persistent watcher holds the process")
+      (fw/unwatch w)
+      (fw/unwatch w)
+      (is (not (.isAlive t)) "and lets go on unwatch"))
     (spit (fs/file dir "after") "")
     (Thread/sleep 500)
     (is (= [{:type :ready}] @events) "no events after unwatch")))

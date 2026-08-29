@@ -61,13 +61,13 @@ Nothing else is needed on any platform: FSEvents, inotify, and
 (spit "src/app.clj" "(ns app)")
 ;; {:type :change, :path "src/app.clj"}
 
-(fw/unwatch watcher)
+(fw/close watcher)
 ```
 
 `watch` takes one path or a collection of paths, each a file or a directory,
-and returns a watcher for `unwatch`. The function receives one event map at
+and returns a watcher for `close`. The function receives one event map at
 a time, in order, on the watcher's thread. The watcher keeps the process
-alive until `unwatch`, on babashka and on the JVM, so a script that only
+alive until `close`, on babashka and on the JVM, so a script that only
 watches needs no other way to block.
 
 ### Events
@@ -116,7 +116,7 @@ its contents reports `:unlink` for each file, deepest first, then
 | `:use-polling` | compare the tree every `:interval` ms instead of listening to the operating system; for network and container file systems | `false` |
 | `:interval` | the polling interval in ms | `100` |
 | `:delay-ms` | how long to collect changes to a path before reporting them | `50` |
-| `:persistent` | keep the process alive until `unwatch` | `true` |
+| `:persistent` | keep the process alive until `close` | `true` |
 
 `watched` returns what the watcher knows. It maps each watched directory to
 the names in that directory.

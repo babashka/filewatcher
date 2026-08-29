@@ -9,7 +9,7 @@
       ;; {:type :ready}
       ;; {:type :change, :path \"src/app.clj\"}
 
-      (fw/unwatch w)
+      (fw/close w)
 
   The backend is FSEvents on macOS, inotify on Linux, ReadDirectoryChangesW
   on Windows, and a timer with :use-polling. The events come from a
@@ -51,7 +51,7 @@
 (defn watch
   "Watches paths and calls f with an event map for each change. paths is
   one path or a collection of paths, each a file or a directory. Returns a
-  watcher for unwatch.
+  watcher for close.
 
   Events are maps with :type and :path. The path is the watched path as
   given, with the part below it added. The event types are:
@@ -84,7 +84,7 @@
     container file systems.
   - :delay-ms: how long to collect changes to a path before reporting them.
     Default 50.
-  - :persistent: true keeps the process alive until unwatch. Default true.
+  - :persistent: true keeps the process alive until close. Default true.
     With false the process can end while the watcher runs."
   ([paths f] (watch paths f nil))
   ([paths f opts]
@@ -122,8 +122,9 @@
      (core/start! w)
      (with-meta (->Watcher (mapv :given roots)) {::impl w}))))
 
-(defn unwatch
-  "Stops a watcher from watch. No events follow. Returns nil."
+(defn close
+  "Stops a watcher from watch and releases what it held. No events follow.
+  Returns nil."
   [watcher]
   (core/stop! (::impl (meta watcher))))
 

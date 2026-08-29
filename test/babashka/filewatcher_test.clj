@@ -37,7 +37,7 @@
 
 (defmacro with-watch
   "Binds events to an atom of events and w to a watcher on dir with opts,
-  waits for :ready, runs body, and unwatches."
+  waits for :ready, runs body, and closes it."
   [[events w dir opts] & body]
   `(let [~events (atom [])
          ~w (fw/watch ~dir (fn [ev#] (swap! ~events conj ev#))
@@ -45,7 +45,7 @@
      (try
        (is (wait-for ~events ready?) "the watcher reports :ready")
        ~@body
-       (finally (fw/unwatch ~w)))))
+       (finally (fw/close ~w)))))
 
 (defn p [& parts] (str/join fs/file-separator parts))
 
@@ -208,19 +208,19 @@
       (is (wait-for events #(and (= [:add] (of-path % (p d1 "one")))
                                  (= [:add] (of-path % (p d2 "two")))))))))
 
-(deftest unwatch-test
+(deftest close-test
   (let [dir (temp-dir)
         events (atom [])
         w (fw/watch dir #(swap! events conj %) {:use-polling polling?})]
     (is (wait-for events ready?))
     (let [^Thread t @(:thread (::fw/impl (meta w)))]
       (is (not (.isDaemon t)) "a persistent watcher holds the process")
-      (fw/unwatch w)
-      (fw/unwatch w)
-      (is (not (.isAlive t)) "and lets go on unwatch"))
+      (fw/close w)
+      (fw/close w)
+      (is (not (.isAlive t)) "and lets go on close"))
     (spit (fs/file dir "after") "")
     (Thread/sleep 500)
-    (is (= [{:type :ready}] @events) "no events after unwatch")))
+    (is (= [{:type :ready}] @events) "no events after close")))
 
 (deftest callback-error-test
   (let [dir (temp-dir)
@@ -237,7 +237,7 @@
       (is (= "boom" (ex-message (:error (first (filter #(= :error (:type %)) @events))))))
       (spit (fs/file dir "b") "")
       (is (wait-for events #(= [:add] (of-path % (p dir "b")))) "the watcher goes on")
-      (finally (fw/unwatch w)))))
+      (finally (fw/close w)))))
 
 (deftest missing-path-test
   (is (thrown-with-msg? clojure.lang.ExceptionInfo #"no such file"

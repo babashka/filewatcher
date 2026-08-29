@@ -84,7 +84,7 @@ inotify (Linux): a watch per directory. The core calls `watch-dir!` for
 every directory it enters and `unwatch-dir!` for every one it leaves, so
 the backend follows the tree. A new directory is watched before its first
 scan, so nothing created in between is missed. A reader thread polls the
-descriptor with a timeout, so `unwatch` returns promptly.
+descriptor with a timeout, so `close` returns promptly.
 
 ReadDirectoryChangesW (Windows): one overlapped read per root, recursive,
 on a thread per root. Names are UTF-16 and relative to the root. A file
@@ -102,14 +102,14 @@ Backends are maps of four functions, `:start!`, `:stop!`, `:watch-dir!`,
 
 ### The API
 
-`watch`, `unwatch`, `watched`, and event maps with `:type` and `:path`.
+`watch`, `close`, `watched`, and event maps with `:type` and `:path`.
 The event names are chokidar's in kebab-case. The options are chokidar's
 with the names in Clojure form: `:ignored`, `:ignore-initial`, `:depth`,
 `:follow-symlinks`, `:await-write-finish`, `:atomic`, `:use-polling`,
-`:interval`. `:delay-ms` comes from the pod. Not taken from chokidar:
-`persistent` (a babashka script decides for itself whether to block),
-`cwd` (the path is reported as given, which covers it), `alwaysStat` and
-`binaryInterval` (no demand yet).
+`:interval`, `:persistent` (a non-daemon dispatcher thread keeps the
+process alive until `close`, on both hosts). `:delay-ms` comes from the
+pod. Not taken from chokidar: `cwd` (the path is reported as given, which
+covers it), `alwaysStat` and `binaryInterval` (no demand yet).
 
 Arenas, callbacks, layouts, and the teardown order are inside the
 backends. Stop order matters: stop the stream, invalidate it, then close
@@ -150,8 +150,10 @@ knowledge belongs to the library, not to its users.
   the stat comparison, as it is to every stat-based watcher.
 - A full-subtree comparison after lost events is O(tree), as is each
   polling interval.
-- Open: `unwatch` stops everything here and removes paths in chokidar,
-  which calls stopping `close`. To settle before a first release.
+- Stopping is `close`, as in chokidar; MB decided 2026-08-29 to follow
+  chokidar's lead in the API. The pod's `unwatch` name is not used, so
+  it stays free for chokidar's meaning, removing paths from a live
+  watcher, should that ever be added.
 
 ## Grounding
 

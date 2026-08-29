@@ -1,9 +1,9 @@
 (ns babashka.filewatcher-test)
 
 ;; the test macro for clj-kondo: the events atom and the watcher are bound,
-;; the body runs, and the watcher is unwatched
+;; the body runs, and the watcher is closed
 (defmacro with-watch [[events w dir opts] & body]
   `(let [~events (atom [])
          ~w (babashka.filewatcher/watch ~dir identity ~opts)]
      (try ~@body
-          (finally (babashka.filewatcher/unwatch ~w)))))
+          (finally (babashka.filewatcher/close ~w)))))

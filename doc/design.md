@@ -54,9 +54,9 @@ decide what an event means. The core is plain Clojure over `babashka.fs`.
   `IN_Q_OVERFLOW`, or a zero-length `ReadDirectoryChangesW` result) asks for
   a full comparison of the subtree. The comparison reports the current
   difference. It does not report every operation that occurred before it.
-- At least once. A comparison can find a file already changed twice and
+- The watcher reports each current difference at least once. A comparison can find a file already changed twice and
   report one `:change`. No backend can promise the exact count of the
-  operations, and the library does not pretend to.
+  operations, and the library does not claim to do so.
 
 ## What each backend does
 

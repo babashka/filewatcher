@@ -33,7 +33,7 @@ a time, in order, on the watcher's thread.
 
 ### Events
 
-Every backend reports the same events for the same changes, because the
+Every backend reports the same event types for the same changes, because the
 events come from a comparison of the file system with a tree the watcher
 keeps. The operating system only says where to look.
 

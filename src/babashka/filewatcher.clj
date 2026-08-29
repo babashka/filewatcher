@@ -49,12 +49,12 @@
 (def ^:private default-awf {:stability-threshold 2000 :poll-interval 100})
 
 (defn watch
-  "Watches paths and calls f with an event map for every change. paths is
+  "Watches paths and calls f with an event map for each change. paths is
   one path or a collection of paths, each a file or a directory. Returns a
-  watcher for unwatch. Each path is a file or a directory.
+  watcher for unwatch.
 
   Events are maps with :type and :path. The path is the watched path as
-  given, extended with the part below it. The types:
+  given, with the part below it added. The event types are:
 
   - :add, :change, :unlink for a file
   - :add-dir, :unlink-dir for a directory
@@ -66,12 +66,13 @@
   Options:
 
   - :ignored: a predicate over the path, a regex, a glob string, or a
-    collection of these. An ignored directory is not entered.
+    collection of these. The watcher does not enter an ignored directory.
   - :ignore-initial: true suppresses the :add and :add-dir events for what
     exists when the watch starts. Default false.
   - :depth: how many levels of subdirectories to enter. 0 watches only the
     entries of the paths. Default unlimited.
-  - :follow-symlinks: true stats through symbolic links. Default false.
+  - :follow-symlinks: true follows symbolic links when it reads file data.
+    Default false.
   - :await-write-finish: true, or {:stability-threshold ms :poll-interval ms},
     holds :add and :change for a file until its size and time stop changing
     for stability-threshold ms (default 2000, checked every 100). Default

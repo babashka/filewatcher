@@ -124,6 +124,21 @@ default. Checked against the watchers on this machine:
 | the JDK's `WatchService` | a symlinked subdirectory is never entered |
 | chokidar | followed |
 
+A worked example, from squint (2026-08-30). `squint watch` defaults to
+`--paths . src` and passes no `ignored`, so it watches the project root:
+in the squint repository that is 2810 directories, 22154 files and 236
+symbolic links under `node_modules` alone. One of them is
+
+    node_modules/squint-cljs -> ..
+
+a link back to the project root, which a package that tests itself
+creates. Following links means walking into that link and arriving where
+the walk started; chokidar carries cycle detection because of exactly
+this. Not following links makes the case disappear. The rest are
+`node_modules/.bin/*` entry points, which under pnpm or npm workspaces
+point outside the project, so following them takes the watch out of the
+tree it was given.
+
 chokidar follows links because a Node project reaches its own sources
 through the symbolic links that npm, pnpm and yarn workspaces put in
 `node_modules`. A babashka script watching `src` has no such

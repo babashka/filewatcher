@@ -110,7 +110,7 @@ its contents reports `:unlink` for each file, deepest first, then
 | `:ignored` | a predicate over the path, a regex, a glob, or a collection of these; the watcher does not enter an ignored directory | none |
 | `:ignore-initial` | no `:add` and `:add-dir` for what exists at the start | `false` |
 | `:depth` | the number of subdirectory levels to enter; `0` watches the entries of the path itself | unlimited |
-| `:follow-symlinks` | stat through symbolic links | `false` |
+| `:follow-symlinks` | stat through symbolic links, so a link is watched as the file it points at | `false` |
 | `:await-write-finish` | `true`, or `{:stability-threshold ms :poll-interval ms}`: hold `:add` and `:change` until the size and modification time stay the same for the threshold (default 2000 ms, checked every 100) | `false` |
 | `:atomic` | hide editor temporary files, such as names that end in `~` or `.swp`, and report a file replaced through a rename as one `:change` | `true`, `false` with polling |
 | `:use-polling` | compare the tree every `:interval` ms instead of listening to the operating system; for network and container file systems | `false` |
@@ -120,6 +120,12 @@ its contents reports `:unlink` for each file, deepest first, then
 
 `watched` returns what the watcher knows. It maps each watched directory to
 the names in that directory.
+
+The options and their defaults are chokidar's, with one exception:
+`:follow-symlinks` is `false` here, where chokidar follows symbolic links.
+A watcher that follows links can walk into a tree you did not point it at.
+Beholder and the JDK's own `WatchService` do not follow them either. Set
+`:follow-symlinks true` for chokidar's behavior.
 
 ## Tests
 

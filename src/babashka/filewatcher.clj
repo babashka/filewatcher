@@ -71,8 +71,10 @@
     exists when the watch starts. Default false.
   - :depth: how many levels of subdirectories to enter. 0 watches only the
     entries of the paths. Default unlimited.
-  - :follow-symlinks: true follows symbolic links when it reads file data.
-    Default false.
+  - :follow-symlinks: true follows symbolic links when it reads file data,
+    so a link is watched as the file it points at. Default false, unlike
+    chokidar: a watcher that follows links can walk into a tree it was
+    never pointed at.
   - :await-write-finish: true, or {:stability-threshold ms :poll-interval ms},
     holds :add and :change for a file until its size and time stop changing
     for stability-threshold ms (default 2000, checked every 100). Default

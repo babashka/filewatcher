@@ -108,8 +108,32 @@ with the names in Clojure form: `:ignored`, `:ignore-initial`, `:depth`,
 `:follow-symlinks`, `:await-write-finish`, `:atomic`, `:use-polling`,
 `:interval`, `:persistent` (a non-daemon dispatcher thread keeps the
 process alive until `close`, on both hosts). `:delay-ms` comes from the
-pod. Not taken from chokidar: `cwd` (the path is reported as given, which
-covers it), `alwaysStat` and `binaryInterval` (no demand yet).
+pod, with 50 instead of the pod's 2000: a rebuild loop should not wait
+two seconds. Not taken from chokidar: `cwd` (the path is reported as
+given, which covers it), `alwaysStat` and `binaryInterval` (no demand
+yet).
+
+The defaults are chokidar's, with one deliberate exception:
+`:follow-symlinks` is `false`, where chokidar follows symbolic links by
+default. Checked against the watchers on this machine:
+
+| watcher | symbolic links by default |
+|---|---|
+| beholder, through directory-watcher 0.17.3 | not followed: `DefaultFileTreeVisitor` calls the two-argument `Files.walkFileTree`, whose option set is empty, and it stats with `NOFOLLOW_LINKS` |
+| pod-babashka-fswatcher, through fsnotify 1.9 | followed on Linux: `IN_DONT_FOLLOW` is an opt-in per `Add` and the pod never passes it. macOS kqueue watches the target. Mixed, and not documented |
+| the JDK's `WatchService` | a symlinked subdirectory is never entered |
+| chokidar | followed |
+
+chokidar follows links because a Node project reaches its own sources
+through the symbolic links that npm, pnpm and yarn workspaces put in
+`node_modules`. A babashka script watching `src` has no such
+arrangement, and following links by default is how a watcher walks into
+a tree it was never pointed at. It also costs what chokidar pays for it:
+cycle detection and the de-duplication of a path reachable two ways.
+`:follow-symlinks true` stats through links for anyone who wants that.
+`atomic` is a smaller difference: chokidar turns it off under FSEvents,
+we keep it on everywhere, because the same rename must produce the same
+events on every backend.
 
 Arenas, callbacks, layouts, and the teardown order are inside the
 backends. Stop order matters: stop the stream, invalidate it, then close

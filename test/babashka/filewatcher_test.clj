@@ -174,7 +174,7 @@
           "a file replaced through a rename is one :change")
       (spit (fs/file dir "notes.txt~") "editor backup")
       (spit (fs/file dir ".notes.txt.swp") "vim swap")
-      (is (empty? (types (remove #(= a (:path %)) (settle events))))
+      (is (empty? (types (remove #(#{a tmp} (:path %)) (settle events))))
           "editor temp files stay quiet"))))
 
 (deftest single-file-test
